@@ -24,24 +24,88 @@ if (!existsSync(internalDocsDir)) {
   mkdirSync(internalDocsDir, { recursive: true });
 }
 
-// Copy user docs from docs/ to site/_user_docs/
-console.log('📖 Copying user documentation...');
-const docsSourceDir = join(projectRoot, 'docs');
-if (existsSync(docsSourceDir)) {
-  const docFiles = readdirSync(docsSourceDir).filter(file => file.endsWith('.md'));
-  
-  for (const file of docFiles) {
-    const sourcePath = join(docsSourceDir, file);
-    const targetPath = join(userDocsDir, file);
-    
-    if (!existsSync(userDocsDir)) {
-      mkdirSync(userDocsDir, { recursive: true });
-    }
-    
-    const content = readFileSync(sourcePath, 'utf-8');
-    writeFileSync(targetPath, content);
-    console.log(`✅ Copied docs/${file} -> site/_user_docs/${file}`);
+// User documentation mappings with front matter
+const userDocs = [
+  {
+    source: 'docs/README.md',
+    target: 'site/_user_docs/overview.md',
+    title: 'Documentation Overview',
+    description: 'Navigate the documentation sections',
+    order: 0
+  },
+  {
+    source: 'docs/getting-started.md',
+    target: 'site/_user_docs/getting-started.md',
+    title: 'Getting Started',
+    description: 'Build your first TextMate grammar in 15 minutes',
+    order: 1
+  },
+  {
+    source: 'docs/api-reference.md',
+    target: 'site/_user_docs/api-reference.md',
+    title: 'API Reference',
+    description: 'Complete function and type reference',
+    order: 2
+  },
+  {
+    source: 'docs/using-scopes.md',
+    target: 'site/_user_docs/using-scopes.md',
+    title: 'Using Scopes',
+    description: 'Master type-safe scope management',
+    order: 3
+  },
+  {
+    source: 'docs/textmate-scopes.md',
+    target: 'site/_user_docs/textmate-scopes.md',
+    title: 'TextMate Scopes Reference',
+    description: 'Complete scope naming guide',
+    order: 4
+  },
+  {
+    source: 'docs/modules-overview.md',
+    target: 'site/_user_docs/modules-overview.md',
+    title: 'Modules Overview',
+    description: 'Deep dive into toolkit architecture',
+    order: 5
+  },
+  {
+    source: 'docs/troubleshooting.md',
+    target: 'site/_user_docs/troubleshooting.md',
+    title: 'Troubleshooting',
+    description: 'Solutions for common issues',
+    order: 6
   }
+];
+
+// Copy user docs with front matter
+console.log('📖 Copying user documentation...');
+for (const doc of userDocs) {
+  const sourcePath = join(projectRoot, doc.source);
+  const targetPath = join(projectRoot, doc.target);
+  
+  if (!existsSync(sourcePath)) {
+    console.warn(`⚠️  Warning: ${doc.source} not found, skipping...`);
+    continue;
+  }
+  
+  if (!existsSync(userDocsDir)) {
+    mkdirSync(userDocsDir, { recursive: true });
+  }
+  
+  const content = readFileSync(sourcePath, 'utf-8');
+  
+  // Add Jekyll front matter
+  const frontMatter = `---
+title: ${doc.title}
+description: ${doc.description}
+order: ${doc.order}
+---
+
+`;
+  
+  const processedContent = frontMatter + content;
+  writeFileSync(targetPath, processedContent);
+  console.log(`✅ Copied ${doc.source} -> ${doc.target}`);
 }
 
 // Internal documentation mappings
