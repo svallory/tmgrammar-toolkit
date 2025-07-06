@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.options.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./.tsc/tmgrammar-toolkit.tsbuildinfo",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "paths": {
+      "#src/*": [
+        "./src/*/index.ts",
+        "./src/*.ts"
+      ],
+      "#src": [
+        "./src/index.ts"
+      ],
+      "#tests/*": [
+        "./tests/*.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ]
+}
