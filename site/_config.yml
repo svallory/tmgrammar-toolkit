@@ -7,8 +7,13 @@ url: "https://svallory.github.io"
 # Jekyll configuration
 theme: minima
 markdown: kramdown
-highlighter: rouge
+highlighter: none
 permalink: pretty
+
+# Markdown configuration
+kramdown:
+  syntax_highlighter_opts:
+    disable: true
 
 # Plugin configuration
 plugins:

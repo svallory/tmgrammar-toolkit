@@ -92,7 +92,25 @@ for (const doc of userDocs) {
     mkdirSync(userDocsDir, { recursive: true });
   }
   
-  const content = readFileSync(sourcePath, 'utf-8');
+  let content = readFileSync(sourcePath, 'utf-8');
+  
+  // Fix markdown links to point to Jekyll URLs
+  content = content
+    // Fix relative links to other docs
+    .replace(/\[([^\]]+)\]\(([^)]+)\.md\)/g, (match, text, path) => {
+      // Handle relative paths within docs
+      if (!path.startsWith('http') && !path.startsWith('/')) {
+        return `[${text}]({{ '/docs/${path}/' | relative_url }})`;
+      }
+      return match;
+    })
+    // Fix specific internal doc links
+    .replace(/\[([^\]]+)\]\(\.\.\/([^)]+)\/README\.md\)/g, (match, text, path) => {
+      const internalPath = path.replace(/\//g, '-').toLowerCase();
+      return `[${text}]({{ '/internal/${internalPath}/' | relative_url }})`;
+    })
+    // Fix any remaining README.md links
+    .replace(/README\.md/g, '');
   
   // Add Jekyll front matter
   const frontMatter = `---
