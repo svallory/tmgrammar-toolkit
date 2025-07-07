@@ -9,7 +9,7 @@ hero:
     file: ../../assets/houston.webp
   actions:
     - text: Get Started
-      link: /getting-started/
+      link: ./getting-started/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/svallory/tmgrammar-toolkit
@@ -39,20 +39,34 @@ Clean APIs, excellent autocomplete, and detailed error messages with source loca
 ## Quick Start
 
 ```typescript
-import { createGrammar, scopes, regex } from 'tmgrammar-toolkit';
+import { createGrammar, scopesFor, regex } from 'tmgrammar-toolkit';
+import { COMMENT } from 'tmgrammar-toolkit/terminals';
+
+// Create scopes with suffix for consistency, prevent extensions for performance
+const scopes = scopesFor({ suffix: 'hello', allowScopeExtension: false });
+// Returns: { keyword: { other: { greeting: 'keyword.other.greeting.hello' } }, ... }
+
+// Define a variable pattern for reuse across rules  
+const helloPattern = regex.concat(/hello/i, regex.optional(/\s+world/i));
+// Type: string - Combined regex pattern for "hello" or "hello world"
 
 const grammar = createGrammar(
-  'My Language',
-  'source.mylang',
-  ['mylang'],
+  'Hello World Language',
+  'source.hello', 
+  ['hello', 'hw'],
   [
     {
-      key: 'keywords',
-      match: regex.keywords(['if', 'else', 'while']),
-      scope: scopes.keyword.control
+      key: 'greeting',
+      match: helloPattern, // Uses our composed regex pattern
+      scope: scopes.keyword.other.greeting // Type-safe: "keyword.other.greeting.hello"
     },
     {
-      key: 'strings',
+      key: 'comment',
+      match: COMMENT.SLASHES, // Pre-built terminal pattern: /\/\/.*$/
+      scope: scopes.comment.line.double_slash
+    },
+    {
+      key: 'string',
       begin: /"/,
       end: /"/,
       scope: scopes.string.quoted.double,
@@ -64,9 +78,25 @@ const grammar = createGrammar(
         }
       ]
     }
-  ]
+  ],
+  {
+    // Variables can be referenced in patterns using {{variableName}}
+    variables: {
+      word: String.raw`[a-zA-Z]+`, // Raw string for regex patterns
+    }
+  }
 );
+// Returns: Result<Grammar> for safe error handling
 ```
+
+This example showcases:
+- **scopesFor()** with suffix and extension prevention for performance
+- **regex helpers** for composing complex patterns cleanly
+- **Terminal patterns** from the built-in library (COMMENT.SLASHES)
+- **Variables** for pattern reuse across rules
+- **Type-safe scopes** with full intellisense and compile-time validation
+- **Comprehensive rule types** (match rules, begin/end rules with nested patterns)
+- **Result pattern** for safe error handling
 
 ## Key Features
 

@@ -45,26 +45,22 @@ import type { MatchRule, BeginEndRule } from 'tmgrammar-toolkit';
 
 // Create static scopes for performance (recommended)
 const scopes = scopesFor({ suffix: 'mylang', allowScopeExtension: false });
-//    ^? 
-// This creates a scopes object with full TypeScript intellisense
+// Returns scopes object with full TypeScript autocomplete
 
 // Define keywords rule
 const keywordRule: MatchRule = {
   key: 'keywords',
   match: regex.keywords(['if', 'else', 'while', 'for', 'function', 'return']),
-  //     ^? 
-  // regex.keywords creates a word-boundary regex for the keywords
+  // Creates word-boundary regex: /\b(?:if|else|while|for|function|return)\b/
   scope: scopes.keyword.control
-  //     ^? 
-  // Full type safety - this will be "keyword.control.mylang"
+  // Type-safe scope: "keyword.control.mylang"
 };
 
 // Define line comment rule
 const lineCommentRule: MatchRule = {
   key: 'line-comment',
   match: regex.concat(COMMENT.SLASHES, /.*$/),
-  //     ^? 
-  // Combines the // pattern with rest of line
+  // Combines patterns: /\/\/.*$/
   scope: scopes.comment.line.double_slash
 };
 
@@ -94,8 +90,7 @@ export const myLangGrammar = createGrammar(
     stringRule
   ]
 );
-// ^? 
-// Returns Result<Grammar> for safe error handling
+// Returns: Result<Grammar> for safe error handling
 ```
 
 ### Step 2: Generate the Grammar File

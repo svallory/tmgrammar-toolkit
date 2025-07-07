@@ -15,7 +15,9 @@
     "@astrojs/starlight-markdoc": "^0.4.0",
     "@shikijs/rehype": "^3.7.0",
     "@shikijs/transformers": "^3.7.0",
+    "@shikijs/twoslash": "^3.7.0",
     "astro": "^5.6.1",
+    "floating-ui": "^5.2.8",
     "sharp": "^0.34.2",
     "shiki": "^3.7.0"
   }
