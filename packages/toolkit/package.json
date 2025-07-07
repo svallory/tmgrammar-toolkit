@@ -32,7 +32,7 @@
     "format": "prettier --write .",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "prepare": "bun run build",
+    "prepublishOnly": "bun run build",
     "test": "bun test",
     "test:regex": "bun test ./src/helpers/regex.test.ts",
     "test:watch": "bun test --watch",
