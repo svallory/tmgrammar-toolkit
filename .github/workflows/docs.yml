@@ -10,12 +10,14 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'README.md'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'docs/**'
       - 'src/**/README.md'
       - 'apps/site/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -32,6 +34,7 @@ concurrency:
 
 jobs:
   build:
+    name: Build Documentation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,15 +45,21 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: Install dependencies
-        run: |
-          bun install
-          cd apps/site
-          bun install
+      - name: Install root dependencies
+        run: bun install
+
+      - name: Install site dependencies
+        working-directory: ./apps/site
+        run: bun install
 
       - name: Generate LLMs.txt files
         run: |
@@ -58,13 +67,27 @@ jobs:
           node scripts/generate-llms-txt.js
 
       - name: Build Astro site
+        working-directory: ./apps/site
         run: |
           echo "🏗️ Building Astro site..."
-          cd apps/site
+          echo "Site URL: ${{ steps.pages.outputs.origin }}"
+          echo "Base path: ${{ steps.pages.outputs.base_path }}"
           bun run build
         env:
-          ASTRO_SITE: ${{ steps.pages.outputs.origin }}
-          ASTRO_BASE: ${{ steps.pages.outputs.base_path }}
+          SITE: ${{ steps.pages.outputs.origin }}
+          BASE: ${{ steps.pages.outputs.base_path }}
+
+      - name: Ensure LLMs.txt files are in build output
+        run: |
+          echo "📄 Ensuring LLMs.txt files are in the build output..."
+          if [ -f "apps/site/public/llms.txt" ]; then
+            cp apps/site/public/llms.txt apps/site/dist/
+            echo "✅ Copied llms.txt"
+          fi
+          if [ -f "apps/site/public/llms-full.txt" ]; then
+            cp apps/site/public/llms-full.txt apps/site/dist/
+            echo "✅ Copied llms-full.txt"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -72,6 +95,7 @@ jobs:
           path: ./apps/site/dist
 
   deploy:
+    name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
