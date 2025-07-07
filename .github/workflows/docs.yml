@@ -6,9 +6,8 @@ on:
     paths:
       - 'docs/**'
       - 'src/**/README.md'
-      - 'site/**'
-      - 'scripts/build-docs.js'
-      - 'scripts/generate-llms-txt.js'
+      - 'apps/site/**'
+      - 'scripts/**'
       - 'package.json'
       - 'README.md'
   pull_request:
@@ -16,7 +15,7 @@ on:
     paths:
       - 'docs/**'
       - 'src/**/README.md'
-      - 'site/**'
+      - 'apps/site/**'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -38,16 +37,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '18'
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
+          bun-version: latest
 
       - name: Setup Pages
         id: pages
@@ -55,32 +48,28 @@ jobs:
 
       - name: Install dependencies
         run: |
-          gem install jekyll bundler
-          cd site
-          bundle init
-          echo 'gem "jekyll", "~> 4.3"' >> Gemfile
-          echo 'gem "minima", "~> 2.5"' >> Gemfile
-          echo 'gem "jekyll-feed", "~> 0.12"' >> Gemfile
-          echo 'gem "jekyll-sitemap", "~> 1.4"' >> Gemfile
-          echo 'gem "jekyll-seo-tag", "~> 2.8"' >> Gemfile
-          bundle install
+          bun install
+          cd apps/site
+          bun install
 
-      - name: Build documentation
+      - name: Generate LLMs.txt files
         run: |
-          echo "🔧 Running documentation build scripts..."
-          node scripts/build-docs.js
+          echo "🔧 Generating LLMs.txt files..."
           node scripts/generate-llms-txt.js
 
-      - name: Build with Jekyll
+      - name: Build Astro site
         run: |
-          echo "🏗️ Building Jekyll site..."
-          cd site
-          bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}" --destination ../_site
+          echo "🏗️ Building Astro site..."
+          cd apps/site
+          bun run build
         env:
-          JEKYLL_ENV: production
+          ASTRO_SITE: ${{ steps.pages.outputs.origin }}
+          ASTRO_BASE: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./apps/site/dist
 
   deploy:
     if: github.ref == 'refs/heads/main'

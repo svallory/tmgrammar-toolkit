@@ -1,79 +1,15 @@
 {
-  "name": "tmgrammar-toolkit",
-  "version": "0.0.1",
-  "description": "A modern, type-safe toolkit for creating TextMate grammars with TypeScript.",
-  "author": {
-    "name": "Sergio Vallory",
-    "url": "https://github.com/svallory"
-  },
-  "license": "MIT",
-  "files": [
-    "bin",
-    "lib",
-    "vendor",
-    "README.md",
-    "LICENSE"
+  "name": "tmt-monorepo",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "keywords": [
-    "developer-tools",
-    "grammar",
-    "highlighting",
-    "syntax-highlighting",
-    "textmate",
-    "tmgrammar",
-    "tmlanguage",
-    "typescript",
-    "vscode"
-  ],
-  "scripts": {
-    "build": "nr clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist",
-    "dev": "tsc -p tsconfig.build.json --watch",
-    "format": "prettier --write .",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "prepare": "bun run build",
-    "test": "bun test",
-    "test:regex": "bun test ./src/helpers/regex.test.ts",
-    "test:watch": "bun test --watch",
-    "docs:build": "node scripts/build-docs.js && node scripts/generate-llms-txt.js",
-    "docs:serve": "cd site && bundle exec jekyll serve --watch --incremental",
-    "validate": "bunx tmt validate"
-  },
-  "bin": {
-    "tmt": "bin/tmt"
-  },
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "exports": {
-    ".": "./lib/index.js",
-    "./package.json": "./package.json",
-    "./*": "./lib/*.js"
-  },
-  "imports": {
-    "#src": "./src/index.ts",
-    "#src/*": [
-      "./src/*/index.ts",
-      "./src/*.ts"
-    ],
-    "#tests/*": "./tests/*.ts"
-  },
-  "dependencies": {
-    "onigasm": "^2.2.5",
-    "vscode-tmgrammar-test": "^0.1.3",
-    "js-yaml": "^4.1.0",
-    "commander": "^11.0.0",
-    "tsx": "^4.0.0"
-  },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.0.0",
-    "@types/plist": "^3.0.5",
-    "expect-type": "^1.2.2",
-    "tmlanguage-generator": "^0.6.1",
-    "type-fest": "^4.41.0",
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0",
-    "vscode-textmate": "^9.0.0"
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }

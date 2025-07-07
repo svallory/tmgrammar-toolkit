@@ -1,0 +1,55 @@
+# tmgrammar-toolkit
+
+A TypeScript toolkit for creating TextMate grammars with type safety, validation, and integrated testing.
+
+## Key Features
+
+- Type-safe grammar creation with full TypeScript support
+- Comprehensive validation using actual Oniguruma regex engine
+- Built-in testing framework with programmatic and declarative approaches
+- CLI tools for grammar emission, testing, and validation
+- Pre-built terminal patterns for common language constructs
+
+## Repository Structure
+
+- `src/` - Core toolkit implementation
+- `docs/` - User documentation
+- `apps/site/` - Documentation website
+- `examples/` - Example grammar implementations
+- `tests/` - Test suite
+
+## Getting Started
+
+```typescript
+import { createGrammar, scopes, regex } from 'tmgrammar-toolkit';
+
+const grammar = createGrammar(
+  'My Language',
+  'source.mylang',
+  ['mylang'],
+  [
+    {
+      key: 'keywords',
+      match: regex.keywords(['if', 'else', 'while']),
+      scope: scopes.keyword.control
+    }
+  ]
+);
+```
+
+## Documentation
+
+Full documentation available at: https://svallory.github.io/tmgrammar-toolkit/
+
+## CLI Usage
+
+```bash
+# Generate grammar JSON
+bunx tmt emit grammar.ts -o grammar.json
+
+# Run tests
+bunx tmt test 'tests/**/*.test.lang' -g grammar.json
+
+# Validate grammar
+bunx tmt validate grammar.json
+```

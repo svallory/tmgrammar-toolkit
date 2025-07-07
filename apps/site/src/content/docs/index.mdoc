@@ -1,0 +1,78 @@
+---
+title: TextMate Grammar Toolkit
+description: A TypeScript toolkit for creating TextMate grammars with type safety, validation, and integrated testing.
+template: splash
+hero:
+  title: TextMate Grammar Toolkit
+  tagline: Transform writing TextMate grammars from error-prone JSON files into a type-safe, testable development experience.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/svallory/tmgrammar-toolkit
+      icon: external
+      variant: minimal
+---
+
+## What is the TextMate Grammar Toolkit?
+
+The TextMate Grammar Toolkit is a comprehensive TypeScript library that transforms how you create TextMate grammars for syntax highlighting in editors like VS Code, Sublime Text, and others.
+
+{% cardgrid stagger=true %}
+{% card title="Type Safety" icon="approve-check" %}
+Eliminate string-based errors with full TypeScript support and compile-time validation.
+{% /card %}
+{% card title="Testing Framework" icon="test-tube" %}
+Built-in testing tools with both programmatic and declarative testing approaches.
+{% /card %}
+{% card title="Validation" icon="magnifier" %}
+Comprehensive validation using the actual Oniguruma regex engine used by VS Code.
+{% /card %}
+{% card title="Developer Experience" icon="laptop" %}
+Clean APIs, excellent autocomplete, and detailed error messages with source locations.
+{% /card %}
+{% /cardgrid %}
+
+## Quick Start
+
+```typescript
+import { createGrammar, scopes, regex } from 'tmgrammar-toolkit';
+
+const grammar = createGrammar(
+  'My Language',
+  'source.mylang',
+  ['mylang'],
+  [
+    {
+      key: 'keywords',
+      match: regex.keywords(['if', 'else', 'while']),
+      scope: scopes.keyword.control
+    },
+    {
+      key: 'strings',
+      begin: /"/,
+      end: /"/,
+      scope: scopes.string.quoted.double,
+      patterns: [
+        {
+          key: 'escape',
+          match: /\\./,
+          scope: scopes.constant.character.escape
+        }
+      ]
+    }
+  ]
+);
+```
+
+## Key Features
+
+- **Type-Safe Scope Management**: Use `scopes.keyword.control` instead of error-prone strings
+- **Regex Helpers**: Clean APIs for building complex patterns
+- **Terminal Patterns**: Pre-built patterns for common language constructs
+- **Comprehensive Testing**: Both programmatic and declarative testing approaches
+- **CLI Tools**: Command-line interface for grammar emission, testing, and validation
+- **Validation System**: Catch errors before they become runtime problems

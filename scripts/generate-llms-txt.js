@@ -1,54 +1,28 @@
 #!/usr/bin/env node
 
-/**
- * Generates llms.txt and llms-full.txt files according to https://llmstxt.org
- * 
- * llms.txt: Essential information for LLMs about the project
- * llms-full.txt: Complete codebase and documentation
- */
-
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs';
-import { join, dirname, relative, extname } from 'path';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '..');
-const siteDir = join(projectRoot, 'site');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = join(__dirname, '..');
+const siteDir = join(rootDir, 'apps', 'site', 'public');
 
-console.log('🤖 Generating LLMs.txt files...');
-
-// Read package.json for project metadata
-const packageJson = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8'));
-
-// Generate timestamp
-const timestamp = new Date().toISOString();
-
-// Helper function to recursively read files
-function readFilesRecursively(dir, extensions = ['.ts', '.js', '.md'], exclude = []) {
+// Get all markdown files from docs and src directories
+function getAllFiles(dir, extension = '.md') {
   const files = [];
   
-  function traverse(currentPath) {
-    const items = readdirSync(currentPath);
+  function traverse(currentDir) {
+    const entries = readdirSync(currentDir);
     
-    for (const item of items) {
-      const fullPath = join(currentPath, item);
-      const relativePath = relative(projectRoot, fullPath);
-      
-      // Skip excluded paths
-      if (exclude.some(pattern => relativePath.includes(pattern))) {
-        continue;
-      }
-      
+    for (const entry of entries) {
+      const fullPath = join(currentDir, entry);
       const stat = statSync(fullPath);
       
       if (stat.isDirectory()) {
         traverse(fullPath);
-      } else if (extensions.includes(extname(fullPath))) {
-        files.push({
-          path: relativePath,
-          content: readFileSync(fullPath, 'utf-8')
-        });
+      } else if (entry.endsWith(extension)) {
+        files.push(fullPath);
       }
     }
   }
@@ -57,180 +31,127 @@ function readFilesRecursively(dir, extensions = ['.ts', '.js', '.md'], exclude =
   return files;
 }
 
-// Generate llms.txt (essential information)
-function generateLlmsTxt() {
-  const content = `# ${packageJson.name}
+// Generate basic llms.txt
+function generateBasicLlms() {
+  const content = `# tmgrammar-toolkit
 
-${packageJson.description}
+A TypeScript toolkit for creating TextMate grammars with type safety, validation, and integrated testing.
 
-Version: ${packageJson.version}
-Repository: ${packageJson.repository?.url || 'N/A'}
-License: ${packageJson.license}
-Generated: ${timestamp}
+## Key Features
 
-## Overview
+- Type-safe grammar creation with full TypeScript support
+- Comprehensive validation using actual Oniguruma regex engine
+- Built-in testing framework with programmatic and declarative approaches
+- CLI tools for grammar emission, testing, and validation
+- Pre-built terminal patterns for common language constructs
 
-TextMate Toolkit is a modern, type-safe toolkit for creating TextMate grammars with TypeScript. It provides:
+## Repository Structure
 
-- Type-safe grammar authoring with comprehensive validation
-- Testing framework for grammar verification
-- CLI tools for development workflow
-- Pre-built patterns for common language constructs
-- Advanced scope management system
+- \`src/\` - Core toolkit implementation
+- \`docs/\` - User documentation
+- \`apps/site/\` - Documentation website
+- \`examples/\` - Example grammar implementations
+- \`tests/\` - Test suite
 
-## Quick Start
+## Getting Started
 
-\`\`\`bash
-# Install
-npm install tmgrammar-toolkit
-
-# Create grammar
+\`\`\`typescript
 import { createGrammar, scopes, regex } from 'tmgrammar-toolkit';
 
-const grammar = createGrammar('MyLang', 'source.mylang', ['mylang'], [
-  { key: 'keywords', match: regex.keywords(['if', 'else']), scope: scopes.keyword.control }
-]);
-
-# Generate JSON
-bunx tmt emit grammar.ts -o grammar.json
+const grammar = createGrammar(
+  'My Language',
+  'source.mylang',
+  ['mylang'],
+  [
+    {
+      key: 'keywords',
+      match: regex.keywords(['if', 'else', 'while']),
+      scope: scopes.keyword.control
+    }
+  ]
+);
 \`\`\`
 
-## Key Files
+## Documentation
 
-### Documentation
-- README.md: Main project documentation
-- docs/getting-started.md: First grammar tutorial
-- docs/api-reference.md: Complete API documentation
-- docs/modules-overview.md: Architecture deep dive
+Full documentation available at: https://svallory.github.io/tmgrammar-toolkit/
 
-### Core Implementation
-- src/types.ts: TypeScript interface definitions
-- src/factory.ts: Grammar creation functions
-- src/emit.ts: JSON/PList generation
-- src/scopes/: Type-safe scope management
-- src/helpers/: Regex construction utilities
-- src/terminals/: Pre-built language patterns
+## CLI Usage
 
-### CLI
-- src/cli/: Command-line interface
-- src/cli/commands/: Individual CLI commands (emit, test, validate, snap)
+\`\`\`bash
+# Generate grammar JSON
+bunx tmt emit grammar.ts -o grammar.json
 
-## Architecture
+# Run tests
+bunx tmt test 'tests/**/*.test.lang' -g grammar.json
 
-The toolkit follows a layered architecture:
-1. Types layer (types.ts) - Core TextMate grammar interfaces
-2. Factory layer (factory.ts) - Clean construction APIs
-3. Processing layer (emit.ts, validation/) - Grammar processing and validation
-4. Helper layer (scopes/, helpers/, terminals/) - Developer convenience APIs
-5. CLI layer (cli/) - Command-line interface
-
-## Usage Patterns
-
-Most common workflow:
-1. Define rules using TypeScript interfaces
-2. Create grammar with createGrammar()
-3. Test with built-in testing framework
-4. Emit to JSON/PList format
-5. Integrate with VS Code or other editors
-
-The toolkit emphasizes type safety, developer experience, and performance.`;
+# Validate grammar
+bunx tmt validate grammar.json
+\`\`\`
+`;
 
   writeFileSync(join(siteDir, 'llms.txt'), content);
-  console.log('✅ Generated llms.txt');
+  console.log('✓ Generated llms.txt');
 }
 
-// Generate llms-full.txt (complete codebase)
-function generateLlmsFullTxt() {
-  // Essential files for understanding the codebase
-  const essentialFiles = [
-    'README.md',
-    'package.json',
-    'src/types.ts',
-    'src/factory.ts',
-    'src/emit.ts',
-    'src/index.ts'
-  ];
+// Generate comprehensive llms-full.txt
+function generateFullLlms() {
+  let content = `# tmgrammar-toolkit - Complete Documentation
 
-  // Documentation files
-  const docFiles = readFilesRecursively(join(projectRoot, 'docs'), ['.md']);
-  
-  // Source code files (excluding test files and build artifacts)
-  const srcFiles = readFilesRecursively(
-    join(projectRoot, 'src'), 
-    ['.ts', '.js'], 
-    ['node_modules', 'dist', 'build', '.test.', '.spec.']
-  );
+A TypeScript toolkit for creating TextMate grammars with type safety, validation, and integrated testing.
 
-  // Example files
-  const exampleFiles = existsSync(join(projectRoot, 'examples')) 
-    ? readFilesRecursively(join(projectRoot, 'examples'), ['.ts', '.js', '.md'])
-    : [];
-
-  let content = `# ${packageJson.name} - Complete Codebase
-
-${packageJson.description}
-
-Version: ${packageJson.version}
-Generated: ${timestamp}
-
-This file contains the complete codebase for LLM analysis and understanding.
-
-## Project Structure
-
-\`\`\`
-${packageJson.name}/
-├── docs/                    # User documentation
-├── src/                     # Source code
-│   ├── cli/                # Command-line interface
-│   ├── scopes/             # Type-safe scope system
-│   ├── helpers/            # Regex utilities
-│   ├── terminals/          # Pre-built patterns
-│   ├── testing/            # Testing framework
-│   └── validation/         # Grammar validation
-├── examples/               # Example implementations
-└── tests/                  # Test suite
-\`\`\`
+---
 
 `;
 
-  // Add essential files first
-  content += '\n## Essential Files\n\n';
-  for (const filePath of essentialFiles) {
-    const fullPath = join(projectRoot, filePath);
-    if (existsSync(fullPath)) {
-      const fileContent = readFileSync(fullPath, 'utf-8');
-      content += `### ${filePath}\n\n\`\`\`\n${fileContent}\n\`\`\`\n\n`;
+  // Add main README
+  const mainReadme = join(rootDir, 'README.md');
+  if (statSync(mainReadme).isFile()) {
+    content += `## Main README\n\n`;
+    content += readFileSync(mainReadme, 'utf8');
+    content += '\n\n---\n\n';
+  }
+
+  // Add CLAUDE.md
+  const claudeFile = join(rootDir, 'CLAUDE.md');
+  if (statSync(claudeFile).isFile()) {
+    content += `## Project Instructions (CLAUDE.md)\n\n`;
+    content += readFileSync(claudeFile, 'utf8');
+    content += '\n\n---\n\n';
+  }
+
+  // Add documentation files
+  const docsDir = join(rootDir, 'docs');
+  if (statSync(docsDir).isDirectory()) {
+    const docFiles = getAllFiles(docsDir, '.md');
+    
+    for (const file of docFiles) {
+      const relativePath = file.replace(rootDir + '/', '');
+      content += `## ${relativePath}\n\n`;
+      content += readFileSync(file, 'utf8');
+      content += '\n\n---\n\n';
     }
   }
 
-  // Add documentation
-  content += '\n## Documentation\n\n';
-  for (const file of docFiles) {
-    content += `### ${file.path}\n\n\`\`\`markdown\n${file.content}\n\`\`\`\n\n`;
-  }
-
-  // Add source code
-  content += '\n## Source Code\n\n';
-  for (const file of srcFiles.sort((a, b) => a.path.localeCompare(b.path))) {
-    const ext = extname(file.path).slice(1);
-    content += `### ${file.path}\n\n\`\`\`${ext}\n${file.content}\n\`\`\`\n\n`;
-  }
-
-  // Add examples
-  if (exampleFiles.length > 0) {
-    content += '\n## Examples\n\n';
-    for (const file of exampleFiles) {
-      const ext = extname(file.path).slice(1);
-      content += `### ${file.path}\n\n\`\`\`${ext}\n${file.content}\n\`\`\`\n\n`;
+  // Add src README files
+  const srcDir = join(rootDir, 'src');
+  if (statSync(srcDir).isDirectory()) {
+    const srcReadmes = getAllFiles(srcDir, '.md');
+    
+    for (const file of srcReadmes) {
+      const relativePath = file.replace(rootDir + '/', '');
+      content += `## ${relativePath}\n\n`;
+      content += readFileSync(file, 'utf8');
+      content += '\n\n---\n\n';
     }
   }
 
   writeFileSync(join(siteDir, 'llms-full.txt'), content);
-  console.log('✅ Generated llms-full.txt');
+  console.log('✓ Generated llms-full.txt');
 }
 
 // Generate both files
-generateLlmsTxt();
-generateLlmsFullTxt();
-
-console.log('🤖 LLMs.txt generation complete!');
+console.log('Generating LLMs.txt files...');
+generateBasicLlms();
+generateFullLlms();
+console.log('LLMs.txt generation complete!');
